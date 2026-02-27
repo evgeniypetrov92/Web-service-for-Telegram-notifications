@@ -1,0 +1,54 @@
+{% extends "_layout.html" %}{% block content %}
+<div class="rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900/45 dark:backdrop-blur p-5 shadow-sm">
+  <div class="text-2xl font-semibold">Чаты</div>
+  <div class="text-slate-600 dark:text-slate-400 text-sm mt-1">Можно заблокировать чат — он не будет получать рассылки</div>
+</div>
+
+<div class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900/45 dark:backdrop-blur overflow-hidden shadow-sm">
+  <table class="w-full text-sm">
+    <thead class="bg-white dark:bg-slate-950/30 text-slate-600 dark:text-slate-300">
+      <tr>
+        <th class="text-left p-3">Название</th>
+        <th class="text-left p-3">Тип</th>
+        <th class="text-left p-3">Chat ID</th>
+        <th class="text-left p-3">Статус</th>
+        <th class="text-left p-3">Действие</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in chats %}
+      <tr class="border-t border-slate-200 dark:border-slate-800/70">
+        <td class="p-3 font-medium">{{ c['title'] }}</td>
+        <td class="p-3 text-slate-600 dark:text-slate-400">{{ c['chat_type'] }}</td>
+        <td class="p-3 text-slate-600 dark:text-slate-400">{{ c['chat_id'] }}</td>
+        <td class="p-3">
+          {% if c['blocked'] == 1 %}
+            <span class="px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-200">Заблокирован</span>
+          {% else %}
+            <span class="px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/25 text-green-700 dark:text-green-200">Активен</span>
+          {% endif %}
+        </td>
+        <td class="p-3">
+          {% if user.role=='admin' %}
+<form method="post" action="/admin/chats/block">
+            <input type="hidden" name="chat_id" value="{{ c['chat_id'] }}"/>
+            <input type="hidden" name="blocked" value="{{ 0 if c['blocked']==1 else 1 }}"/>
+            {% if c['blocked'] == 1 %}
+              <button class="px-3 py-2 rounded-xl bg-white/70 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/70 hover:border-slate-300 dark:hover:border-slate-700">Разблокировать</button>
+            {% else %}
+              <button class="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-200 hover:opacity-90">Заблокировать</button>
+            {% endif %}
+          </form>
+          {% else %}
+            <span class="text-xs opacity-70">Только просмотр</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      {% if chats|length == 0 %}
+        <tr><td class="p-4 text-slate-600 dark:text-slate-400" colspan="5">Пока пусто. Добавь бота в группу.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

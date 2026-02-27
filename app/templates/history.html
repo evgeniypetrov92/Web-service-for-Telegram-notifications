@@ -1,0 +1,40 @@
+{% extends "_layout.html" %}{% block content %}
+<div class="rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900/45 dark:backdrop-blur p-5 shadow-sm">
+  <div class="text-2xl font-semibold">История отправки</div>
+  <div class="text-slate-600 dark:text-slate-400 text-sm mt-1">Последние попытки отправки</div>
+</div>
+
+<div class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900/45 dark:backdrop-blur overflow-hidden shadow-sm">
+  <table class="w-full text-sm">
+    <thead class="bg-white dark:bg-slate-950/30 text-slate-600 dark:text-slate-300">
+      <tr>
+        <th class="text-left p-3">Время (МСК)</th>
+<th class="text-left p-3">Chat ID</th>
+        <th class="text-left p-3">Чат</th>
+        <th class="text-left p-3">Статус</th>
+        <th class="text-left p-3">Детали</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in logs %}
+      <tr class="border-t border-slate-200 dark:border-slate-800/70">
+        <td class="p-3 text-slate-600 dark:text-slate-400">{{ l['created_at_fmt'] }}</td>
+<td class="p-3 text-slate-600 dark:text-slate-400">{{ l['chat_id'] }}</td>
+        <td class="p-3 font-medium">{{ l['chat_title'] or '—' }}</td>
+        <td class="p-3">
+          {% if l['status']=='OK' %}
+            <span class="px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/25 text-green-700 dark:text-green-200">ок</span>
+          {% elif l['status']=='SKIPPED' %}
+            <span class="px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-200">ПРОПУЩЕНО</span>
+          {% else %}
+            <span class="px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/25 text-red-700 dark:text-red-200">ошибка</span>
+          {% endif %}
+        </td>
+        <td class="p-3 text-slate-600 dark:text-slate-400 break-all">{{ l['details'] }}</td>
+      </tr>
+      {% endfor %}
+      {% if logs|length == 0 %}<tr><td class="p-4 text-slate-600 dark:text-slate-400" colspan="6">История пока пустая.</td></tr>{% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
