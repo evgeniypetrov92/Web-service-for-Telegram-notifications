@@ -1,0 +1,169 @@
+{% extends "_layout.html" %}
+{% block content %}
+
+<div class="rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900/45 dark:backdrop-blur p-5 shadow-sm">
+  <div class="text-2xl font-semibold">История отправки</div>
+  <div class="text-slate-600 dark:text-slate-400 text-sm mt-1">Одна строка = одна рассылка. Детали по чатам открываются отдельно.</div>
+</div>
+
+<div class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900/45 dark:backdrop-blur p-4 shadow-sm">
+  <form method="get" action="{{ route_base|default('/admin') }}/history" class="flex flex-wrap items-end gap-3">
+    <div>
+      <div class="text-xs text-slate-500 mb-1">Дата от (МСК)</div>
+      <input name="date_from" value="{{ date_from }}" placeholder="ДД.ММ.ГГГГ"
+             class="w-44 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-950/30 outline-none"/>
+    </div>
+    <div>
+      <div class="text-xs text-slate-500 mb-1">Дата до (МСК)</div>
+      <input name="date_to" value="{{ date_to }}" placeholder="ДД.ММ.ГГГГ"
+             class="w-44 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-950/30 outline-none"/>
+    </div>
+
+    <button type="submit"
+            class="px-5 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-medium">
+      Применить
+    </button>
+
+    <a href="{{ route_base|default('/admin') }}/history"
+       class="px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-950/30">
+      Сбросить
+    </a>
+
+    <div class="flex-1"></div>
+
+    <a href="{{ route_base|default('/admin') }}/history/export?date_from={{ date_from }}&date_to={{ date_to }}"
+       class="px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-950/30">
+      Скачать Excel
+    </a>
+  </form>
+</div>
+
+{% if active_broadcast %}
+<div id="activeBroadcastBox" class="mt-4 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4 shadow-sm">
+  <div class="flex items-center justify-between gap-4">
+    <div class="min-w-0">
+      <div class="text-xl font-semibold">Идёт рассылка #<span id="abId">{{ active_broadcast.id }}</span></div>
+      <div class="text-slate-600 dark:text-slate-300 mt-1">
+        Прогресс: <span id="abProg">{{ active_broadcast.ok + active_broadcast.err + active_broadcast.skipped }}</span> /
+        <span id="abTotal">{{ active_broadcast.total }}</span>
+        · Ошибок: <span id="abErr">{{ active_broadcast.err }}</span>
+        · Пропущено: <span id="abSkip">{{ active_broadcast.skipped }}</span>
+      </div>
+      <div class="mt-2 h-2 rounded-full bg-slate-200/70 dark:bg-slate-800 overflow-hidden">
+        <div id="abBar" class="h-2 rounded-full bg-amber-500" style="width:0%"></div>
+      </div>
+    </div>
+
+    <form method="post" action="{{ route_base|default('/admin') }}/broadcast/cancel">
+      <button type="submit"
+              class="px-6 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-semibold">
+        Отменить рассылку
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  async function refresh() {
+    try {
+      const r = await fetch('{{ route_base|default('/admin') }}/broadcast/status', {cache:'no-store'});
+      if (!r.ok) return;
+      const data = await r.json();
+      const ab = data.active_broadcast;
+      const box = document.getElementById('activeBroadcastBox');
+      if (!box) return;
+
+      if (!ab || !ab.id) {
+        box.style.display = 'none';
+        return;
+      }
+
+      const done = (ab.ok || 0) + (ab.err || 0) + (ab.skipped || 0);
+      const total = (ab.total || 0);
+      const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+
+      document.getElementById('abId').textContent = ab.id;
+      document.getElementById('abProg').textContent = String(done);
+      document.getElementById('abTotal').textContent = String(total);
+      document.getElementById('abErr').textContent = String(ab.err || 0);
+      document.getElementById('abSkip').textContent = String(ab.skipped || 0);
+      document.getElementById('abBar').style.width = pct + '%';
+    } catch (e) {}
+  }
+
+  refresh();
+  setInterval(refresh, 1500);
+})();
+</script>
+{% endif %}
+
+<div class="mt-4 space-y-4">
+  {% for b in broadcasts %}
+  <div class="rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900/45 dark:backdrop-blur p-5 shadow-sm">
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+      <div class="min-w-0 flex-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="text-lg font-semibold">Рассылка #{{ b.broadcast_id }}</div>
+          {% if b.status_key == 'done' %}
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-sky-400/40 bg-sky-500/10 text-sky-200">{{ b.status_label }}</span>
+          {% elif b.status_key == 'running' %}
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-amber-400/40 bg-amber-500/10 text-amber-200">{{ b.status_label }}</span>
+          {% elif b.status_key == 'cancelled' %}
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-amber-400/40 bg-amber-500/10 text-amber-200">{{ b.status_label }}</span>
+          {% else %}
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-rose-400/40 bg-rose-500/10 text-rose-200">{{ b.status_label }}</span>
+          {% endif %}
+        </div>
+        <div class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          Создана: {{ b.created_at_fmt }}
+          <span class="mx-2">•</span>
+          Отправитель: {{ b.broadcast_user or '—' }}
+          <span class="mx-2">•</span>
+          Файлов: {{ b.file_count }}
+        </div>
+        <div class="mt-3 text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap break-words">{{ b.message_preview }}</div>
+      </div>
+
+      <div class="lg:w-[340px] rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-slate-50/70 dark:bg-slate-950/30 p-4">
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <div class="text-slate-500">Получателей</div>
+            <div class="mt-1 text-xl font-semibold">{{ b.recipient_count }}</div>
+          </div>
+          <div>
+            <div class="text-slate-500">Успешно</div>
+            <div class="mt-1 text-xl font-semibold">{{ b.ok_count }}</div>
+          </div>
+          <div>
+            <div class="text-slate-500">Ошибок</div>
+            <div class="mt-1 text-xl font-semibold">{{ b.error_count }}</div>
+          </div>
+          <div>
+            <div class="text-slate-500">Пропущено</div>
+            <div class="mt-1 text-xl font-semibold">{{ b.skipped_count }}</div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs text-slate-500">
+          <span>Успех</span>
+          <span>{{ b.success_rate }}%</span>
+        </div>
+        <div class="mt-2 h-2 rounded-full bg-slate-200/70 dark:bg-slate-800 overflow-hidden">
+          <div class="h-2 rounded-full bg-emerald-500" style="width: {{ b.success_rate }}%"></div>
+        </div>
+        <div class="mt-4">
+          <a href="{{ route_base|default('/admin') }}/history/{{ b.broadcast_id }}" class="inline-flex items-center justify-center w-full px-4 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-medium">
+            Открыть детали
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900/45 dark:backdrop-blur p-6 text-slate-500 shadow-sm">
+    Нет записей
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

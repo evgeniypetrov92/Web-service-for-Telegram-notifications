@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = { darkMode: 'class' };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <title>{{ title or "Информирование брендов" }}</title>
+  {% set route_base = route_base|default("/admin") %}
+  {% set active_platform = active_platform|default("telegram") %}
+  {% set telegram_base = "/admin" %}
+  {% set max_base = "/admin/max" %}
+
+  <script>
+  // theme fixed: dark only
+</script>
+
+  <style>
+    /* light theme background (clean, like Maxma UI) */
+    .bg-soft {
+      background:
+        radial-gradient(1200px 520px at 0% 0%, rgba(139,92,246,.16), rgba(139,92,246,0) 60%),
+        radial-gradient(900px 520px at 100% 20%, rgba(34,211,238,.12), rgba(34,211,238,0) 55%),
+        linear-gradient(180deg, rgba(255,255,255,1), rgba(255,255,255,.96));
+    }
+    /* dark theme background */
+    .dark .bg-soft{
+      background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(124,58,237,.22), transparent 60%),
+        radial-gradient(1000px 500px at 90% 20%, rgba(6,182,212,.18), transparent 55%),
+        radial-gradient(900px 600px at 80% 90%, rgba(14,165,233,.12), transparent 55%),
+        linear-gradient(to bottom, rgba(2,6,23,1), rgba(10,15,30,1));
+    }
+    
+
+    /* --- Maxma-like Light/Dark theming overrides (v7) --- */
+    html.dark{
+      --card-bg: rgba(15,23,42,.46);
+      --card-bg-2: rgba(15,23,42,.32);
+      --card-border: rgba(148,163,184,.16);
+      --text: #e2e8f0;
+      --muted: rgba(226,232,240,.78);
+      --muted2: rgba(226,232,240,.60);
+      --chip: rgba(226,232,240,.08);
+      --shadow: 0 18px 50px rgba(0,0,0,.55);
+    }
+
+    /* Background closer to your reference (soft lilac + cyan) */
+    .bg-soft{
+      background:
+        radial-gradient(980px 560px at 8% 0%, rgba(124,58,237,.12), transparent 60%),
+        radial-gradient(980px 560px at 88% 12%, rgba(14,165,233,.10), transparent 55%),
+        radial-gradient(1100px 700px at 80% 92%, rgba(34,211,238,.10), transparent 60%),
+        linear-gradient(to bottom, #ffffff, #f5f7ff);
+    }
+    .dark .bg-soft{
+      background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(124,58,237,.22), transparent 60%),
+        radial-gradient(1000px 500px at 90% 20%, rgba(6,182,212,.18), transparent 55%),
+        radial-gradient(900px 600px at 80% 90%, rgba(14,165,233,.12), transparent 55%),
+        linear-gradient(to bottom, rgba(2,6,23,1), rgba(10,15,30,1));
+    }
+
+    /* Replace gray slabs with clean cards in LIGHT theme (keep dark intact) */
+    html:not(.dark) .bg-slate-900\/45,
+    html:not(.dark) .bg-slate-950\/30,
+    html:not(.dark) .bg-slate-800\/40,
+    html:not(.dark) .bg-slate-900\/40,
+    html:not(.dark) .bg-slate-900\/50,
+    html:not(.dark) .bg-white\/10{
+      background: var(--card-bg) !important;
+      backdrop-filter: blur(14px);
+    }
+
+    html:not(.dark) .border-slate-800\/70,
+    html:not(.dark) .border-slate-700\/50{
+      border-color: var(--card-border) !important;
+    }
+
+    /* Text readability in LIGHT theme */
+    html:not(.dark) .text-slate-300,
+    html:not(.dark) .text-slate-400{ color: var(--muted) !important; }
+    html:not(.dark) .text-slate-500{ color: var(--muted2) !important; }
+    html:not(.dark) .text-slate-100,
+    html:not(.dark) .text-slate-200{ color: var(--text) !important; }
+
+    /* Inputs / selects / editor surfaces in LIGHT theme */
+    html:not(.dark) input,
+    html:not(.dark) textarea,
+    html:not(.dark) select{
+      background: rgba(255,255,255,.95) !important;
+      color: var(--text) !important;
+      border-color: var(--card-border) !important;
+    }
+
+    /* Buttons/chips */
+    html:not(.dark) .bg-slate-950\/20{ background: var(--chip) !important; }
+    html:not(.dark) .hover\:bg-white\/10:hover{ background: rgba(15,23,42,.06) !important; }
+
+    /* Softer card shadows in light theme */
+    html:not(.dark) .shadow-sm{ box-shadow: var(--shadow) !important; }
+
+    /* Quill toolbar / editor in LIGHT theme */
+    html:not(.dark) .ql-toolbar.ql-snow,
+    html:not(.dark) .ql-container.ql-snow{
+      border-color: var(--card-border) !important;
+    }
+    html:not(.dark) .ql-toolbar.ql-snow{
+      background: rgba(248,250,252,.95) !important;
+    }
+    html:not(.dark) .ql-container.ql-snow{
+      background: rgba(255,255,255,.98) !important;
+    }
+    html:not(.dark) .ql-editor{ color: var(--text) !important; }
+
+
+
+
+    /* Light theme: force readable text (some elements use slate-100/white classes) */
+    html:not(.dark) .text-slate-50,
+    html:not(.dark) .text-slate-100,
+    html:not(.dark) .text-slate-200,
+    html:not(.dark) .text-slate-300,
+    html:not(.dark) .text-slate-400,
+    html:not(.dark) .text-white {
+      color: var(--text) !important;
+    }
+    html:not(.dark) .text-slate-500,
+    html:not(.dark) .text-slate-600 {
+      color: var(--muted) !important;
+    }
+
+    /* Light theme: soften "dark" button/side panels to lavender glass */
+    html:not(.dark) .pill,
+    html:not(.dark) .card,
+    html:not(.dark) .panel,
+    html:not(.dark) .sidebar,
+    html:not(.dark) .topbar,
+    html:not(.dark) .content-card {
+      background: var(--card-bg-2);
+      border-color: var(--card-border);
+    }
+</style>
+</head>
+
+<body class="min-h-screen bg-soft text-slate-900 dark:text-slate-100">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <div class="flex items-center gap-4 min-w-0">
+        <div class="p-0 bg-transparent border-0 shadow-none">
+          <img src="/static/maxma_logo.svg" alt="maxma" class="h-10 w-auto"/>
+        </div>
+        <div class="min-w-0">
+          <div class="text-xl font-semibold leading-tight">Информирование брендов</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">панель рассылок · {{ platform_name|default("Telegram") }}</div>
+        </div>
+      </div>
+</div>
+
+    <div class="mb-4 flex items-center gap-2">
+      <a href="/admin/compose?v=3" class="px-4 py-2 rounded-xl border text-sm font-semibold {{ "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950" if active_platform=="telegram" else "bg-white dark:bg-slate-900/45 border-slate-200 dark:border-slate-800/70" }}">Telegram</a>
+      <a href="/admin/max/compose?v=3" class="px-4 py-2 rounded-xl border text-sm font-semibold {{ "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950" if active_platform=="max" else "bg-white dark:bg-slate-900/45 border-slate-200 dark:border-slate-800/70" }}">MAX</a>
+    </div>
+    <div class="flex items-start gap-4">
+      <aside class="w-72 hidden lg:block">
+        <div class="rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900/45 dark:backdrop-blur p-4 sticky top-6 shadow-sm">
+          <nav class="space-y-2 text-sm">
+            <a class="block px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/70 hover:bg-slate-50 hover:border-slate-300 dark:hover:bg-white/5 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-950/30 {{ 'bg-white dark:bg-slate-950/30 border-slate-300 dark:border-slate-700' if active=='compose' else '' }}" href="{{ route_base }}/compose">Рассылка</a>
+            <a class="block px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/70 hover:bg-slate-50 hover:border-slate-300 dark:hover:bg-white/5 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-950/30 {{ 'bg-white dark:bg-slate-950/30 border-slate-300 dark:border-slate-700' if active=='groups' else '' }}" href="{{ route_base }}/groups">Группировки</a>
+            <a class="block px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/70 hover:bg-slate-50 hover:border-slate-300 dark:hover:bg-white/5 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-950/30 {{ 'bg-white dark:bg-slate-950/30 border-slate-300 dark:border-slate-700' if active=='chats' else '' }}" href="{{ route_base }}/chats">Чаты</a>
+            <a class="block px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/70 hover:bg-slate-50 hover:border-slate-300 dark:hover:bg-white/5 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-950/30 {{ 'bg-white dark:bg-slate-950/30 border-slate-300 dark:border-slate-700' if active=='history' else '' }}" href="{{ route_base }}/history">История отправки</a>
+            <a class="block px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/70 hover:bg-slate-50 hover:border-slate-300 dark:hover:bg-white/5 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-950/30 {{ 'bg-white dark:bg-slate-950/30 border-slate-300 dark:border-slate-700' if active=='settings' else '' }}" href="{{ route_base }}/settings">Смена пароля</a>
+{% if user and user.role=='admin' %}
+<a class="block px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-white/40 dark:hover:bg-white/10 transition {{ 'bg-white/60 dark:bg-white/10' if active=='users' else '' }}" href="/admin/users">Пользователи</a>
+{% endif %}
+          </nav>
+          <div class="mt-5 text-xs text-slate-500 dark:text-slate-400">{% if active_platform=='max' %}Для MAX чаты подтягиваются через polling и ручную синхронизацию.{% else %}Добавь бота в группу — чат появится автоматически.{% endif %}</div>
+        </div>
+      <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between gap-3">
+  <div class="text-xs opacity-80">
+    <div class="font-semibold opacity-90">{{ user.username }}</div>
+    <div>{{ 'Админ' if user.role=='admin' else 'Менеджер' }}</div>
+  </div>
+  <a class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-white/40 dark:hover:bg-white/10 transition text-sm" href="/admin/logout">Выйти</a>
+</div>
+
+</aside>
+      <main class="flex-1 min-w-0">{% block content %}{% endblock %}</main>
+    </div>
+  </div>
+</body>
+</html>
